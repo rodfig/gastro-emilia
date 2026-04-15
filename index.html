@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emilia-Romagna — Gastronomia &amp; Erbazzone</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --g:    #009246;
+      --r:    #CE2B37;
+      --bg:   #F4EDE0;
+      --ink:  #1C1C1C;
+      --soft: #5C5856;
+      --gold: #9A6F28;
+      --W:    1280px;
+      --H:    720px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #111;
+      font-family: 'Lato', sans-serif;
+      font-size: 22px;
+      color: var(--ink);
+    }
+
+    /* ── Scaling shell ── */
+    #shell {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #deck {
+      position: relative;
+      width: var(--W); height: var(--H);
+      transform-origin: center center;
+    }
+
+    /* ── Slides ── */
+    .slide {
+      position: absolute; inset: 0;
+      width: var(--W); height: var(--H);
+      background: var(--bg);
+      padding: 42px 60px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s ease;
+    }
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── Progress bar ── */
+    #progress {
+      position: fixed; bottom: 0; left: 0;
+      height: 3px; background: var(--g);
+      transition: width .35s ease;
+      z-index: 10;
+    }
+
+    /* ── Nav arrows ── */
+    .nav {
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,.35); color: #fff;
+      border: none; cursor: pointer;
+      width: 36px; height: 64px;
+      font-size: 18px; z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .nav:hover { background: rgba(0,0,0,.6); }
+    #prev { left: 8px; border-radius: 0 4px 4px 0; }
+    #next { right: 8px; border-radius: 4px 0 0 4px; }
+
+    /* ══════════════════════════════
+       SHARED COMPONENTS
+    ══════════════════════════════ */
+    h1, h2, h3, h4 {
+      font-family: 'Playfair Display', serif;
+      text-transform: none;
+      letter-spacing: -.02em;
+      color: var(--ink);
+    }
+    p  { margin: 0; }
+    ul { list-style: none; padding: 0; }
+
+    /* Eyebrow */
+    .ey     { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+    .ey-num { font-family:'Playfair Display',serif; font-size:.6em; font-weight:700; color:var(--g); }
+    .ey-bar { width:28px; height:2px; background:var(--r); flex-shrink:0; }
+    .ey-lbl { font-size:.52em; letter-spacing:3px; text-transform:uppercase; color:var(--soft); }
+
+    /* Headings */
+    .h2     { font-size:1.75em; font-weight:700; line-height:1.15; margin-bottom:10px; }
+    .h2 em  { color:var(--r); font-style:italic; }
+    .sub    { font-size:.68em; color:var(--soft); font-style:italic; margin-bottom:18px; }
+
+    /* Grid helpers */
+    .g2 { display:grid; grid-template-columns:1fr 1fr; gap:36px; }
+    .g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+
+    /* ══════════════════════════════
+       SLIDE 1 — HERO
+    ══════════════════════════════ */
+    .hero {
+      background: #0D110E url('images/fig1.png') center/cover no-repeat !important;
+      justify-content: center;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: rgba(10,13,11,.72);
+    }
+    .hero > *:not(.flag):not(.wm):not(.hero-overlay) {
+      position: relative; z-index: 1;
+    }
+    .flag { position:absolute; left:0; right:0; height:5px; z-index:2;
+            background:linear-gradient(90deg,var(--g) 33.3%,#fff 33.3%,#fff 66.6%,var(--r) 66.6%); }
+    .flag.t { top:0; } .flag.b { bottom:0; }
+    .wm { position:absolute; right:-20px; top:50%; transform:translateY(-50%);
+          font-family:'Playfair Display',serif; font-size:20em; font-style:italic;
+          color:rgba(255,255,255,.04); line-height:1; pointer-events:none; user-select:none; }
+
+    .h-over { font-size:.56em; letter-spacing:4px; text-transform:uppercase; color:var(--g); margin-bottom:28px; }
+    .h-h1   { font-family:'Playfair Display',serif; font-size:3.6em; font-style:italic;
+              color:#fff; line-height:1.15; margin-bottom:44px; }
+    .h-h1 .r { color:var(--r); }
+    .h-sub  { font-family:'Playfair Display',serif; font-size:.9em;
+              color:rgba(255,255,255,.45); font-style:italic; margin-bottom:56px; }
+    .h-rule { display:flex; align-items:center; gap:14px; }
+    .h-rule .ln { width:32px; height:1px; background:rgba(255,255,255,.18); }
+    .h-rule .tx { font-size:.52em; color:rgba(255,255,255,.3); letter-spacing:3px; text-transform:uppercase; }
+
+    /* ══════════════════════════════
+       SLIDE 2 — REGIÃO
+    ══════════════════════════════ */
+    .body-p { font-size:.82em; color:var(--soft); line-height:1.8; margin-bottom:14px; }
+    .body-p strong { color:var(--ink); }
+
+    .stat             { padding:14px 0; border-bottom:1px solid rgba(0,0,0,.09); }
+    .stat:first-child { border-top:1px solid rgba(0,0,0,.09); }
+    .stat-n           { font-family:'Playfair Display',serif; font-size:2.4em; font-weight:700;
+                        color:var(--g); line-height:1; margin-bottom:4px; }
+    .stat-n.r         { color:var(--r); }
+    .stat-lbl         { font-size:.68em; color:var(--soft); line-height:1.45; }
+
+    /* ══════════════════════════════
+       SLIDE 3 — PROVÍNCIAS
+    ══════════════════════════════ */
+    .pcard      { background:#fff; border-radius:10px; padding:20px 22px;
+                  border-left:5px solid var(--g); height:100%; box-sizing:border-box; }
+    .pcard.r    { border-left-color:var(--r); }
+    .pc-name    { font-family:'Playfair Display',serif; font-size:1.0em; font-weight:700; margin-bottom:4px; }
+    .pc-spec    { font-size:.58em; letter-spacing:2px; text-transform:uppercase;
+                  color:var(--g); margin-bottom:8px; }
+    .pcard.r .pc-spec { color:var(--r); }
+    .pc-desc    { font-size:.76em; color:var(--soft); line-height:1.6; }
+
+    /* ══════════════════════════════
+       SLIDE 4 — O PRATO
+    ══════════════════════════════ */
+    .badge   { display:inline-block; font-size:.54em; letter-spacing:2px; text-transform:uppercase;
+               font-weight:700; padding:3px 11px; border-radius:20px;
+               background:var(--g); color:#fff; margin-bottom:12px; }
+    .dp      { font-size:.8em; color:var(--soft); line-height:1.78; margin-bottom:12px; }
+
+    .ig-lbl  { font-size:.58em; font-weight:700; text-transform:uppercase; letter-spacing:2px;
+               color:var(--g); padding-bottom:5px; border-bottom:1px solid rgba(0,146,70,.2);
+               margin-bottom:7px; }
+    .ig      { font-size:.78em; color:var(--ink); padding:2px 0 2px 14px;
+               position:relative; line-height:1.45; }
+    .ig::before { content:'–'; position:absolute; left:0; color:var(--r); }
+    .ig-grp  { margin-bottom:16px; }
+    .ig-note { font-size:.64em; color:var(--soft); font-style:italic; margin-top:6px; }
+
+    /* ══════════════════════════════
+       SLIDE 5 — PREPARAÇÃO
+    ══════════════════════════════ */
+    .steps { display:grid; grid-template-columns:1fr 1fr; gap:14px; flex:1; }
+    .step  { background:#fff; border-radius:10px; padding:20px 22px;
+             display:flex; gap:14px; align-items:flex-start; }
+    .sn    { font-family:'Playfair Display',serif; font-size:2.6em; font-weight:700;
+             color:rgba(206,43,55,.11); line-height:1; min-width:44px; }
+    .step h4 { font-size:.86em; font-weight:700; margin-bottom:6px; }
+    .step p  { font-size:.74em; color:var(--soft); line-height:1.6; }
+
+    /* ══════════════════════════════
+       SLIDE 6 — HARMONIZAÇÃO
+    ══════════════════════════════ */
+    .wcard       { background:#fff; border-radius:12px; padding:22px 20px;
+                   border-top:5px solid var(--r); display:flex; flex-direction:column; gap:7px; }
+    .wcard.g     { border-top-color:var(--g); }
+    .wi          { font-size:1.5em; margin-bottom:2px; }
+    .wn          { font-family:'Playfair Display',serif; font-size:.98em; font-weight:700; }
+    .wt          { font-size:.57em; text-transform:uppercase; letter-spacing:2px; color:var(--r); }
+    .wcard.g .wt { color:var(--g); }
+    .wd          { font-size:.76em; color:var(--soft); line-height:1.58; flex:1; }
+    .wp          { font-size:.62em; color:var(--g); font-style:italic;
+                   padding-top:7px; border-top:1px solid #eee; }
+
+    .rat        { background:#fff; border-radius:10px; padding:13px 20px;
+                  border-left:4px solid var(--gold); margin-top:14px; }
+    .rat p      { font-size:.72em; color:var(--soft); line-height:1.6; font-style:italic; }
+    .rat strong { color:var(--ink); font-style:normal; }
+
+    /* ══════════════════════════════
+       SLIDE 7 — ANÁLISE ESTRUTURAL
+    ══════════════════════════════ */
+    .pa-strip {
+      display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+      background:#fff; border-radius:8px; padding:8px 14px; margin-top:4px;
+    }
+    .pa-label {
+      font-size:.55em; font-weight:700; text-transform:uppercase;
+      letter-spacing:2px; color:var(--soft); margin-right:4px; white-space:nowrap;
+    }
+    .pa-pill {
+      font-size:.57em; background:var(--bg);
+      border:1px solid rgba(0,0,0,.1); border-radius:20px;
+      padding:2px 9px; color:var(--ink); white-space:nowrap;
+    }
+    .pa-card { display:flex; flex-direction:column; }
+    .pa-checks { display:flex; flex-direction:column; gap:5px; flex:1; margin-top:8px; }
+    .pa-check {
+      font-size:.71em; line-height:1.35; padding-left:18px;
+      position:relative; color:var(--soft);
+    }
+    .pa-check::before { position:absolute; left:0; }
+    .pa-check.ok::before      { content:'✓'; color:var(--g); }
+    .pa-check.ok2::before     { content:'✦'; color:var(--gold); font-size:.8em; }
+    .pa-check.risk            { color:#8a5500; }
+    .pa-check.risk::before    { content:'▲'; color:var(--gold); font-size:.75em; }
+    .pa-check.resolve         { color:var(--soft); padding-left:26px; font-style:italic; }
+    .pa-check.resolve::before { content:'↳'; color:rgba(0,0,0,.3); left:14px; }
+    .pa-verdict {
+      font-size:.65em; font-weight:700; padding:6px 10px;
+      border-radius:6px; margin-top:8px; text-align:center;
+    }
+    .pa-verdict.v1 { background:rgba(0,146,70,.1);  color:var(--g); }
+    .pa-verdict.v2 { background:rgba(0,146,70,.16); color:#005f2a; }
+  </style>
+</head>
+<body>
+
+<div id="shell">
+  <div id="deck">
+
+    <!-- ══ SLIDE 1 — HERO ══ -->
+    <section class="slide hero">
+      <div class="flag t"></div>
+      <div class="flag b"></div>
+      <div class="wm" aria-hidden="true">ER</div>
+      <div class="hero-overlay"></div>
+
+      <p class="h-over">AEP Profissional II &nbsp;·&nbsp; Gastronomia Italiana</p>
+      <h1 class="h-h1">Emilia-<span class="r">Romagna</span></h1>
+      <p class="h-sub">Prazeres Suínos e Delícias Epicuristas</p>
+      <div class="h-rule">
+        <div class="ln"></div>
+        <span class="tx">O Coração Culinário da Itália</span>
+      </div>
+    </section>
+
+
+    <!-- ══ SLIDE 2 — A REGIÃO ══ -->
+    <section class="slide">
+      <div class="ey"><span class="ey-num">01</span><span class="ey-bar"></span><span class="ey-lbl">A Região</span></div>
+      <h2 class="h2">Uma Terra de <em>Sabores Lendários</em></h2>
+      <p class="sub">Do Vale do Pó aos Apeninos</p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; flex:1; min-height:0; align-items:stretch; overflow:hidden;">
+        <div style="display:flex; flex-direction:column; gap:6px; overflow:hidden;">
+          <img src="images/fig6.png" alt="Mapa Emilia-Romagna" style="width:100%; max-height:200px; object-fit:contain; object-position:left; border-radius:8px; flex-shrink:0;">
+          <p class="body-p" style="margin-bottom:6px; line-height:1.65;">
+            A <strong>Via Emília</strong> une há 2.000 anos as cidades que definem a gastronomia italiana: Modena, Parma, Ferrara, Bolonha.
+          </p>
+          <p class="body-p" style="margin-bottom:6px; line-height:1.65;">
+            O soro que sobra da produção do Parmigiano alimenta os porcos de Parma — os mesmos que dão origem aos melhores <em>salumi</em> do mundo.
+          </p>
+          <p class="body-p" style="margin-bottom:0; line-height:1.65;">
+            Bolonha tem três epítetos: <strong>La Grassa</strong> (a Gorda — pela cozinha), <strong>La Rossa</strong> (a Vermelha — pelos pórticos de terracota) e <strong>La Dotta</strong> (a Sábia — pela sua universidade, a mais antiga da Europa).
+          </p>
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:center; overflow:hidden;">
+          <div class="stat" style="padding:10px 0;">
+            <div class="stat-n">9 M+</div>
+            <div class="stat-lbl">Prosciutti di Parma produzidos por ano,<br>protegidos por DOP</div>
+          </div>
+          <div class="stat" style="padding:10px 0;">
+            <div class="stat-n r">4 anos</div>
+            <div class="stat-lbl">Máximo de envelhecimento do Parmigiano Reggiano<br>— transportado em caminhões blindados</div>
+          </div>
+          <div class="stat" style="padding:10px 0;">
+            <div class="stat-n">25 anos</div>
+            <div class="stat-lbl">Tempo máximo do Aceto Balsamico Tradizionale<br>— um elixir, não um vinagre</div>
+          </div>
+        </div>
+        <div style="border-radius:12px; overflow:hidden; min-height:0;">
+          <img src="images/fig5.png" alt="Parmigiano Reggiano" style="width:100%; height:100%; object-fit:cover; object-position:center; display:block;">
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ══ SLIDE 3 — GASTRONOMIA ══ -->
+    <section class="slide">
+      <div class="ey"><span class="ey-num">02</span><span class="ey-bar"></span><span class="ey-lbl">Gastronomia</span></div>
+      <h2 class="h2">Uma Região, <em>Nove Identidades</em></h2>
+      <p class="sub">Cada cidade, uma especialidade inconfundível</p>
+
+      <div style="display:flex; flex-direction:column; gap:16px; flex:1;">
+        <div class="g2">
+          <div class="pcard">
+            <div class="pc-name">Bolonha</div>
+            <div class="pc-spec">Mortadella · Ragù Bolognese</div>
+            <p class="pc-desc">Capital culinária. A mortadella é um enchido cozido de carne de porco finamente triturada, com cubos de toucinho branco e pistácios — a inspiração original do bologna americano. O ragù é um molho de carne com manteiga e noz-moscada — nunca, jamais, servido com esparguete.</p>
+          </div>
+          <div class="pcard r">
+            <div class="pc-name">Modena</div>
+            <div class="pc-spec">Zampone · Aceto Balsamico</div>
+            <p class="pc-desc">Terra de Ferrari e Pavarotti. O zampone é a pata dianteira do porco desossada e recheada com uma mistura de carne temperada — cozida lentamente e servida na véspera de Ano Novo. O aceto balsamico amadurece 12 a 25 anos em barris de madeira — um sacramento local.</p>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="pcard">
+            <div class="pc-name">Parma &amp; Reggio Emilia</div>
+            <div class="pc-spec">Prosciutto · Culatello · Erbazzone</div>
+            <p class="pc-desc">Capital alimentar de Itália. O culatello — a parte mais nobre da perna traseira do porco, curada nas adegas húmidas das margens do Pó — é considerado o rei dos <em>salumi</em> italianos. Berço do erbazzone, batizado <em>scarpazzoun</em> pelos talos da acelga que lembram um sapato (<em>scarpa</em>). Divide os locais: ricota no recheio, ou não?</p>
+          </div>
+          <div class="pcard r">
+            <div class="pc-name">Romagna</div>
+            <div class="pc-spec">Piadina · Garganelli · Brodetto</div>
+            <p class="pc-desc">Onde o mar encontra os Apeninos. A piadina é pão achatado de farinha e banha, cozido em pedra — símbolo romagnolo. Os garganelli são massa de ovo enrolada sobre um pente, formando um tubo canelado; servidos com ragù ou prosciutto. O brodetto é o ensopado de peixe dos pescadores da costa adriática. À medida que os Apeninos sobem, surgem os funghi porcini, as trufas e a caça.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ══ SLIDE 4 — O PRATO ══ -->
+    <section class="slide">
+      <div class="ey"><span class="ey-num">03</span><span class="ey-bar"></span><span class="ey-lbl">O Prato</span></div>
+      <h2 class="h2"><em>Erbazzone</em> — Torta Rústica de Acelga</h2>
+
+      <div style="display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:24px; flex:1; min-height:0; margin-top:8px; align-items:stretch;">
+
+        <!-- Image -->
+        <div style="border-radius:12px; overflow:hidden; min-height:0;">
+          <img src="images/fig7.png" alt="Erbazzone" style="width:100%; height:100%; object-fit:cover; display:block;">
+        </div>
+
+        <!-- Description -->
+        <div style="display:flex; flex-direction:column; justify-content:center;">
+          <span class="badge">Reggio Emilia · Cucina Povera</span>
+          <p class="dp">
+            Chamado <em>scarpazzoun</em> no dialeto local, nasceu como comida camponesa de piquenique nos jardins de Reggio Emilia. Acelgas temperadas com pancetta e Parmigiano, envoltas numa massa de manteiga.
+          </p>
+          <p class="dp">
+            Evoluiu de <em>cucina povera</em> para o lanche mais amado da região — cortado em quadrados, servido quente ou à temperatura ambiente.
+          </p>
+          <p style="font-size:.72em; font-style:italic; color:var(--gold);">
+            "Erbazzone" significa herb pie — o recheio é sempre verde.
+          </p>
+        </div>
+
+        <!-- Ingredients -->
+        <div style="display:flex; flex-direction:column; justify-content:center;">
+          <div class="ig-grp">
+            <div class="ig-lbl">Massa</div>
+            <div class="ig">285 g de manteiga sem sal, gelada</div>
+            <div class="ig">315 g de farinha de trigo</div>
+            <div class="ig">1 c. chá de sal &nbsp;·&nbsp; 120 ml de água gelada</div>
+          </div>
+          <div class="ig-grp">
+            <div class="ig-lbl">Recheio</div>
+            <div class="ig">1,35 kg de acelga suíça, sem talos</div>
+            <div class="ig">85 g de pancetta &nbsp;·&nbsp; 1 cebola &nbsp;·&nbsp; 4 alhos</div>
+            <div class="ig">115 g de Parmigiano Reggiano ralado</div>
+            <div class="ig">170 g de ricota integral (opcional)</div>
+            <div class="ig">1 ovo grande &nbsp;·&nbsp; 1 c. sopa de azeite</div>
+          </div>
+          <p class="ig-note">Rende 12 porções &nbsp;·&nbsp; Forno a 200 °C</p>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ══ SLIDE 5 — PREPARAÇÃO ══ -->
+    <section class="slide">
+      <div class="ey"><span class="ey-num">04</span><span class="ey-bar"></span><span class="ey-lbl">Preparação</span></div>
+      <h2 class="h2">Da Horta ao <em>Forno</em></h2>
+      <p class="sub">Sinopse em 4 etapas</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="sn">1</div>
+          <div>
+            <h4>Preparar a Fuiada</h4>
+            <p>A massa tradicional chama-se <em>fuiada</em>. Misturar farinha, sal e gordura (manteiga ou banha); juntar água gelada gradualmente até obter uma massa macia, elástica e não pegajosa. Envolver em película e refrigerar mínimo 1 hora.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="sn">2</div>
+          <div>
+            <h4>Refogar a Pancetta</h4>
+            <p>Dourar a pancetta em azeite em lume médio-baixo (5–7 min) até libertar a gordura. Reservar a pancetta. Manter a gordura na frigideira — é nela que se cozinha a base de cebola e alho.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="sn">3</div>
+          <div>
+            <h4>Cozinhar a Acelga</h4>
+            <p>Refogar cebola e alho na gordura reservada. Juntar a acelga em punhados, tapar até murchar. Retirar a tampa e cozinhar até toda a humidade evaporar — crucial para a massa não ensopar. Arrefecer completamente; temperar com noz-moscada, sal e pimenta. Incorporar Parmigiano e pancetta.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="sn">4</div>
+          <div>
+            <h4>Montar e Assar</h4>
+            <p>Estender a massa o mais fino possível. Forrar o tabuleiro, distribuir o recheio em camada uniforme, cobrir com a segunda folha e crimpar as bordas. Picar a superfície com um garfo para deixar sair o vapor. Pincelar com azeite (tradição) ou ovo. Assar a 200 °C, 30–35 min, até dourado e estaladiço.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ══ SLIDE 6 — HARMONIZAÇÃO ══ -->
+    <section class="slide">
+      <div class="ey"><span class="ey-num">05</span><span class="ey-bar"></span><span class="ey-lbl">Harmonização</span></div>
+      <h2 class="h2">Vinhos da <em>Emilia-Romagna</em></h2>
+      <p class="sub">Por que a culinária da região casa naturalmente com os seus vinhos</p>
+
+      <div class="g3" style="align-items:stretch;">
+        <div class="wcard">
+          <div class="wi">🍷</div>
+          <div class="wn">Lambrusco di Sorbara</div>
+          <div class="wt">Tinto Espumante · Seco · Módena</div>
+          <p class="wd">O mais aromático e delicado dos Lambruscos. Cor rubi pálida, aromas de violeta e morango silvestre, acidez pronunciada e baixo teor alcoólico (10,5–11,5%). As borbulhas e a acidez cortam a gordura da pancetta e da manteiga — parceiro histórico desta cozinha.</p>
+          <div class="wp">Acidez viva · Corta a gordura</div>
+        </div>
+        <div class="wcard">
+          <div class="wi">🍇</div>
+          <div class="wn">Sangiovese di Romagna</div>
+          <div class="wt">Tinto · Médio Corpo · Romagna</div>
+          <p class="wd">Rubi com reflexos granada, aromas de cereja ácida, violeta e ervas, com toque de tabaco fresco. Seco, harmonioso, levemente tânico e com final ligeiramente amargo. Os locais chamam-lhe <em>"Sanzves"</em> — o vinho do quotidiano da Romagna. Equilibra a amargura da acelga e o umami do Parmigiano.</p>
+          <div class="wp">Equilibra a amargura · Eleva o umami</div>
+        </div>
+        <div class="wcard g">
+          <div class="wi">🌿</div>
+          <div class="wn">Colli di Scandiano e di Canossa</div>
+          <div class="wt">DOC · Colinas de Reggio Emilia</div>
+          <p class="wd">Colinas a sul de Reggio Emilia — o mesmo terroir do erbazzone. A <strong>Spergola</strong>, casta branca autóctone, produz espumantes frescos e de acidez viva que cortam a gordura da massa; tintos de <strong>Marzemino</strong> e <strong>Malbo Gentile</strong> acompanham o recheio. Elogiado já no século&nbsp;XV como <em>"fresco e espumante"</em>.</p>
+          <div class="wp" style="color:var(--g);">Mesmo terroir · Spergola corta a gordura</div>
+        </div>
+      </div>
+
+      <div class="rat">
+        <p>
+          <strong>Porquê estes vinhos?</strong> A gordura e salinidade do erbazzone — manteiga, pancetta, Parmigiano — pedem vinhos com <strong>acidez firme</strong> para limpar o palato. O Lambrusco seco é o parceiro inato; o Sangiovese acrescenta estrutura tânica que equilibra o recheio; o Colli di Scandiano e di Canossa fecha o círculo — vinho e prato nasceram na mesma terra.
+        </p>
+      </div>
+    </section>
+
+
+    <!-- ══ SLIDE 7 — ANÁLISE ESTRUTURAL ══ -->
+    <section class="slide">
+      <div class="ey"><span class="ey-num">06</span><span class="ey-bar"></span><span class="ey-lbl">Análise Estrutural</span></div>
+      <h2 class="h2">Porquê Estes Vinhos <em>Funcionam</em></h2>
+      <p class="sub">Avaliação de acordo com a análise estrutural da harmonização</p>
+
+      <div class="pa-strip">
+        <span class="pa-label">Perfil do prato</span>
+        <span class="pa-pill">Gordura alta</span>
+        <span class="pa-pill">Intensidade média-alta</span>
+        <span class="pa-pill">Amargura (acelga)</span>
+        <span class="pa-pill">Umami (Parmigiano)</span>
+        <span class="pa-pill">Salinidade (pancetta)</span>
+        <span class="pa-pill">Massa crocante</span>
+      </div>
+
+      <div class="g3" style="flex:1; align-items:stretch; margin-top:12px;">
+
+        <div class="wcard pa-card">
+          <div class="wn">Lambrusco di Sorbara</div>
+          <div class="wt" style="margin-bottom:4px;">Tinto Espumante · Módena</div>
+          <div class="pa-checks">
+            <div class="pa-check ok">Acidez alta → corta gordura e manteiga</div>
+            <div class="pa-check ok">Borbulhas → limpam o palato entre garfadas</div>
+            <div class="pa-check ok">Taninos baixos → sem conflito com laticínios</div>
+            <div class="pa-check ok">Terroir adjacente (Módena–Reggio Emilia)</div>
+            <div class="pa-check risk">Corpo muito leve pode ser engolido pelo recheio intenso</div>
+            <div class="pa-check resolve">A gordura amplifica os aromas; acidez e borbulhas compensam</div>
+          </div>
+          <div class="pa-verdict v1">✅ Excelente · o parceiro inato</div>
+        </div>
+
+        <div class="wcard pa-card">
+          <div class="wn">Sangiovese di Romagna</div>
+          <div class="wt" style="margin-bottom:4px;">Tinto · Médio Corpo · Romagna</div>
+          <div class="pa-checks">
+            <div class="pa-check ok">Acidez média-alta → resolve a gordura</div>
+            <div class="pa-check ok">Corpo médio → sustenta a intensidade do prato</div>
+            <div class="pa-check ok">Final amargo → paralelo com a amargura da acelga</div>
+            <div class="pa-check ok">Afinidade regional (Romagna)</div>
+            <div class="pa-check risk">Taninos médios + laticínios podem criar adstringência</div>
+            <div class="pa-check resolve">Umami do Parmigiano suaviza os taninos; risco irrelevante</div>
+          </div>
+          <div class="pa-verdict v1">✅ Sólido · melhor equilíbrio estrutural</div>
+        </div>
+
+        <div class="wcard g pa-card">
+          <div class="wn">Colli di Scandiano · Spergola</div>
+          <div class="wt" style="margin-bottom:4px; color:var(--g);">Branco Espumante · Reggio Emilia</div>
+          <div class="pa-checks">
+            <div class="pa-check ok">Acidez alta → máximo corte da gordura da massa</div>
+            <div class="pa-check ok">Sem taninos → zero conflito com laticínios</div>
+            <div class="pa-check ok">Mineralidade → realça as ervas verdes do recheio</div>
+            <div class="pa-check ok2">Terroir idêntico → mesmo município de origem</div>
+            <div class="pa-check risk">Branco leve pode parecer delgado face à pancetta</div>
+            <div class="pa-check resolve">Acidez alta e identidade de terroir superam a diferença</div>
+          </div>
+          <div class="pa-verdict v2">✅✅ Máxima afinidade · terroir comum</div>
+        </div>
+
+      </div>
+    </section>
+
+  </div><!-- /deck -->
+</div><!-- /shell -->
+
+<div id="progress"></div>
+<button class="nav" id="prev" aria-label="Anterior">&#8249;</button>
+<button class="nav" id="next" aria-label="Próximo">&#8250;</button>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const progress = document.getElementById('progress');
+  let cur = 0;
+
+  function show(n) {
+    slides[cur].classList.remove('active');
+    cur = Math.max(0, Math.min(n, slides.length - 1));
+    slides[cur].classList.add('active');
+    progress.style.width = ((cur + 1) / slides.length * 100) + '%';
+    document.getElementById('prev').style.opacity = cur === 0 ? '0.3' : '1';
+    document.getElementById('next').style.opacity = cur === slides.length - 1 ? '0.3' : '1';
+  }
+
+  function scale() {
+    const deck = document.getElementById('deck');
+    const s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    deck.style.transform = `scale(${s})`;
+  }
+
+  document.getElementById('prev').addEventListener('click', () => show(cur - 1));
+  document.getElementById('next').addEventListener('click', () => show(cur + 1));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') show(cur + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                     show(cur - 1);
+  });
+  window.addEventListener('resize', scale);
+
+  scale();
+  show(0);
+</script>
+</body>
+</html>
