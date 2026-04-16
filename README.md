@@ -33,9 +33,19 @@ Funcionalidades: transição por opacidade, escala por `transform:scale()`, tecl
 
 ## Harmonização — método aplicado
 
-A análise estrutural do slide 7 segue os princípios do **método Nanban** (AEP Profissional III):  
-6 dimensões (acidez, corpo, taninos, doçura, estilo, final) + regras de bónus/conflito.  
-Os três vinhos escolhidos são regionais e estruturalmente sólidos — sem conflitos activos.
+A análise estrutural do slide 7 aplica a **Pirâmide Sensorial de Harrington** em três camadas:
+
+| Camada | Comida | Vinho |
+|--------|--------|-------|
+| Base | SAUDA — Salinidade · Acidez · Umami · Doçura · Amargor | ADE — Acidez · Doçura · Efervescência |
+| Textura | GMPC — Gordura · Método · Proteína · Corpo | CATA — Corpo · Álcool · Taninos · cArvalho |
+| Sabores | AIP — Tipo de Aroma · Intensidade · Persistência | AIP |
+
+Perfil do erbazzone: salinidade alta · acidez baixa · umami alto · doçura baixa · amargor médio · gordura alta · proteína moderada · método forno.
+
+Os três vinhos são regionais e estruturalmente sólidos. Risco principal: taninos do Sangiovese com gordura láctea e umami alto — mitigado pela salinidade alta da pancetta e do Parmigiano.
+
+Documentação completa do framework: `AEP Profissional III\Maridagem\doc\`
 
 ## Como ver
 
