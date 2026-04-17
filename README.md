@@ -47,7 +47,13 @@ Os três vinhos são regionais e estruturalmente sólidos. Risco principal: tani
 
 Documentação completa do framework: `AEP Profissional III\Maridagem\doc\`
 
+## Layout responsivo
+
+- **Desktop** — canvas fixo 1280×720px escalado por `transform:scale()` para preencher o viewport
+- **Mobile ≤768px** — layout em fluxo natural; todos os grids colapsam para coluna única; slides mostrados/escondidos por `display:none/flex`; `100svh` para excluir o chrome do browser
+
 ## Como ver
 
 Abrir `index.html` num servidor local (ex: `npx http-server`) ou directamente no browser.  
-Navegar com ← → ou clicando nas setas laterais.
+Navegar com ← → ou clicando nas setas laterais.  
+Live: https://gastro-emilia.vercel.app
