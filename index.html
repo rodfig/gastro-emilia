@@ -252,6 +252,64 @@
     }
     .pa-verdict.v1 { background:rgba(0,146,70,.1);  color:var(--g); }
     .pa-verdict.v2 { background:rgba(0,146,70,.16); color:#005f2a; }
+
+    /* ══════════════════════════════
+       MOBILE — ≤768px
+    ══════════════════════════════ */
+    @media (max-width: 768px) {
+      html, body { overflow: auto; font-size: 18px; }
+
+      #shell { position:static; background:var(--bg); display:block; }
+      #deck  { position:static; width:100%; height:auto; transform:none !important; }
+
+      .slide {
+        position:static; width:100%; height:auto; min-height:100svh;
+        padding:36px 20px 60px; display:none; opacity:1;
+        pointer-events:none; overflow:visible;
+      }
+      .slide.active { display:flex; pointer-events:auto; }
+
+      /* Hero */
+      .hero { min-height:100svh; justify-content:center; }
+      .h-h1 { font-size:2.6em; }
+      .wm   { display:none; }
+
+      /* Typography */
+      .h2  { font-size:1.4em; }
+      .sub { margin-bottom:12px; }
+
+      /* Grids → single column */
+      .g2, .g3     { grid-template-columns:1fr; gap:14px; }
+      .steps       { grid-template-columns:1fr; }
+
+      /* Slide 2 — override inline grid */
+      .s2-grid {
+        grid-template-columns:1fr !important;
+        flex:none !important; gap:16px !important; overflow:visible !important;
+      }
+      .s2-grid > div:last-child { height:200px; border-radius:12px; overflow:hidden; }
+
+      /* Slide 4 — override inline grid */
+      .s4-grid {
+        grid-template-columns:1fr !important;
+        flex:none !important; gap:16px !important;
+      }
+      .s4-grid > div:first-child { height:220px; }
+      .s4-grid > div:nth-child(2),
+      .s4-grid > div:nth-child(3) { justify-content:flex-start !important; }
+
+      /* Stat block */
+      .stat-n { font-size:2em; }
+
+      /* Wine cards */
+      .wcard { padding:18px 16px; }
+
+      /* Analysis strip — already wraps, just reduce gap */
+      .pa-strip { gap:6px; }
+
+      /* Nav */
+      .nav { width:30px; height:48px; font-size:15px; }
+    }
   </style>
 </head>
 <body>
@@ -282,7 +340,7 @@
       <h2 class="h2">Uma Terra de <em>Sabores Lendários</em></h2>
       <p class="sub">Do Vale do Pó aos Apeninos</p>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; flex:1; min-height:0; align-items:stretch; overflow:hidden;">
+      <div class="s2-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; flex:1; min-height:0; align-items:stretch; overflow:hidden;">
         <div style="display:flex; flex-direction:column; gap:6px; overflow:hidden;">
           <img src="images/fig6.png" alt="Mapa Emilia-Romagna" style="width:100%; max-height:200px; object-fit:contain; object-position:left; border-radius:8px; flex-shrink:0;">
           <p class="body-p" style="margin-bottom:6px; line-height:1.65;">
@@ -356,7 +414,7 @@
       <div class="ey"><span class="ey-num">03</span><span class="ey-bar"></span><span class="ey-lbl">O Prato</span></div>
       <h2 class="h2"><em>Erbazzone</em> — Torta Rústica de Acelga</h2>
 
-      <div style="display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:24px; flex:1; min-height:0; margin-top:8px; align-items:stretch;">
+      <div class="s4-grid" style="display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:24px; flex:1; min-height:0; margin-top:8px; align-items:stretch;">
 
         <!-- Image -->
         <div style="border-radius:12px; overflow:hidden; min-height:0;">
@@ -569,6 +627,7 @@
 
   function scale() {
     const deck = document.getElementById('deck');
+    if (window.innerWidth <= 768) { deck.style.transform = ''; return; }
     const s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
     deck.style.transform = `scale(${s})`;
   }
